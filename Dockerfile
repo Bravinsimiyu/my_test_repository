@@ -5,6 +5,9 @@ WORKDIR /build
 # Copy the entire workspace into the builder image
 COPY . .
 
+# FIXED: This line must be here to grant Linux execution permissions
+RUN chmod +x gradlew
+
 # Compile and package the Fat JAR inside the isolated container
 RUN ./gradlew clean build -x test
 
