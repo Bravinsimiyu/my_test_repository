@@ -41,3 +41,8 @@ tasks.named('test') {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
 }
+
+// ADD THIS AT THE BOTTOM: Forces the output name to be 'app.jar' without version numbers
+tasks.named('jar') {
+    archiveFileName = 'app.jar'
+}
