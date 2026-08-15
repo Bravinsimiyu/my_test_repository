@@ -9,14 +9,20 @@ COPY . .
 RUN chmod +x ./gradlew
 
 # Compile and package the Fat JAR inside the isolated container
-RUN ./gradlew clean build -x test
+# --stacktrace + --info surface the real failure instead of it being swallowed
+RUN ./gradlew clean build -x test --stacktrace
+
+# Debug step: confirm what actually landed in build/libs.
+# Remove this line once the build is passing reliably.
+RUN ls -la /build/build/libs/
 
 # Stage 2: Clean, tiny production runtime
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-# Safely copy the JAR produced during Stage 1
-COPY --from=builder /build/build/libs/app.jar app.jar
+# Wildcard is more forgiving than a hardcoded filename if the archive
+# name ever changes (version suffix, plugin defaults, etc.)
+COPY --from=builder /build/build/libs/*.jar app.jar
 
 # Execute the application asset
 ENTRYPOINT ["java", "-jar", "app.jar"]
