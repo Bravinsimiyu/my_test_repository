@@ -5,6 +5,11 @@ WORKDIR /build
 # Copy the entire workspace into the builder image
 COPY . .
 
+# FIXES BOTH ERRORS: Installs dos2unix, cleans Windows line endings, and forces executable permissions
+RUN apk add --no-cache dos2unix && \
+    dos2unix gradlew && \
+    chmod +x gradlew
+
 # Compile and package the Fat JAR inside the isolated container
 RUN ./gradlew clean build -x test
 
