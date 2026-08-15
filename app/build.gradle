@@ -26,7 +26,17 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-// FIXED: Forces Gradle to build into a stable, non-variable path
-tasks.named('installDist') {
-    into layout.buildDirectory.dir("install/dist")
+// Packages code and library dependencies into a clean flat jar
+tasks.named('jar') {
+    archiveFileName = 'app.jar'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    
+    from sourceSets.main.output
+    from {
+        configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
+    }
+    
+    manifest {
+        attributes('Main-Class': application.mainClass.get())
+    }
 }
