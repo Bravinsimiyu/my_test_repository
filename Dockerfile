@@ -1,11 +1,19 @@
-# Use eclipse-temurin Java 21 to match your build.gradle toolchain
-FROM eclipse-temurin:21-jre-alpine
+# Stage 1: Build the Fat JAR inside Docker
+FROM eclipse-temurin:21-jdk-alpine AS builder
+WORKDIR /build
 
-# Set working directory inside the container
+# Copy the entire workspace into the builder image
+COPY . .
+
+# Compile and package the Fat JAR inside the isolated container
+RUN ./gradlew clean build -x test
+
+# Stage 2: Clean, tiny production runtime
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-# Copy the app.jar compiled by your Gradle build
-COPY build/libs/app.jar app.jar
+# Safely copy the JAR produced during Stage 1
+COPY --from=builder /build/build/libs/app.jar app.jar
 
-# Run the application using the main class path defined in your build configuration
+# Execute the application asset
 ENTRYPOINT ["java", "-jar", "app.jar"]
